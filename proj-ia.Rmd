@@ -1,0 +1,134 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r ,warning=FALSE, message=FALSE}
+library(caret)
+library(mlbench)
+library(C50)
+library(dplyr)
+library(plotly)
+library(caret)
+library(ROSE)
+library(rpart)
+library(GGally)
+```
+
+```{r}
+setwd("~/git/projeto-ia/")
+```
+
+
+```{r}
+data <- read.csv(("data/true_car_listings.csv"))
+```
+
+
+```{r}
+
+data.correlation <- data  %>%
+  mutate(Mileage = as.numeric(Mileage)) %>%
+  mutate(City = as.numeric(City)) %>%
+  mutate(Make = as.numeric(Make)) %>%
+  mutate(Model = as.numeric(Model)) %>%
+  mutate(State = as.numeric(State)) %>%
+  mutate(Vin = as.numeric(Vin)) 
+
+data.correlation %>% 
+  na.omit() %>%
+  ggcorr(palette = "RdBu",
+         color = "grey50",
+         label = TRUE, hjust = 1,
+         label_size = 3, size = 4,
+         nbreaks = 5, layout.exp = 7) +
+  ggtitle("Correlation Between Variables")
+
+
+
+```
+
+
+
+```{r}
+index <- createDataPartition(data$Price, p = 0.75, list = FALSE)
+train <- data[index, ]
+test  <- data[-index, ]
+```
+
+
+
+```{r}
+fitControl <- trainControl(
+                           method = "repeatedcv", 
+                           number = 10,
+                           repeats = 10)
+```
+
+```{r}
+preProcess = c("center", "scale","nzv" )
+```
+
+#Lasso
+```{r}
+model.lasso <- train(Price ~ ., 
+               data = train,
+               method = "lasso",
+               metric = "RMSE",
+               preProcess = preProcess,
+               trControl = fitControl,
+               na.action = na.exclude,
+               tuneLength = 10)
+
+model.lasso
+```
+
+
+```{r}
+lambda.grid <- expand.grid(lambda = seq(0, 2, by=0.1))
+```
+#Ridge
+
+```{r}
+model.ridge <- train(Price ~ ., 
+               data = train,
+               method = "ridge", 
+               tuneGrid = lambda.grid,
+               metric = "RMSE",
+               trControl = fitControl, 
+               preProcess = preProcess)
+
+model.ridge
+```
+
+#KNN
+
+```{r}
+model.knn <- train(Price ~ ., 
+               data = train,
+               trControl = fitControl,
+               method = "knn", # pode ser 'lasso'ldf
+               metric = "RMSE",
+               preProcess = preProcess)
+
+model.knn
+```
+
+#Arvore de decisão
+
+model.adaboost <- train(situacao ~ ., 
+               data = data.rose,
+               trControl = trainControl(method = "repeatedcv", 
+                           number = 10,
+                           repeats = 5),
+               method = 'adaboost', 
+               metric = "Accuracy",
+               preProcess = preProcess)
+
+model.adaboost
+
+```{r}
+
+```
+
+
