@@ -27,7 +27,7 @@ data <- read.csv(("data/true_car_listings.csv"))
 
 ```{r}
 
-data.correlation <- data  %>%
+data <- data  %>%
   mutate(Mileage = as.numeric(Mileage)) %>%
   mutate(City = as.numeric(City)) %>%
   mutate(Make = as.numeric(Make)) %>%
@@ -51,7 +51,10 @@ data.correlation %>%
 
 
 ```{r}
-index <- createDataPartition(data$Price, p = 0.75, list = FALSE)
+index <- createDataPartition(data$Price, p = 0.70, list = FALSE)
+data <- data[-index, ]
+
+index <- createDataPartition(data$Price, p = 0.70, list = FALSE)
 train <- data[index, ]
 test  <- data[-index, ]
 ```
@@ -62,7 +65,7 @@ test  <- data[-index, ]
 fitControl <- trainControl(
                            method = "repeatedcv", 
                            number = 10,
-                           repeats = 10)
+                           repeats = 5)
 ```
 
 ```{r}
@@ -116,19 +119,70 @@ model.knn
 
 #Arvore de decisão
 
-model.adaboost <- train(situacao ~ ., 
-               data = data.rose,
-               trControl = trainControl(method = "repeatedcv", 
-                           number = 10,
-                           repeats = 5),
-               method = 'adaboost', 
-               metric = "Accuracy",
-               preProcess = preProcess)
 
-model.adaboost
+```{r Decision Tree, warning=TRUE}
+model.dec_tree <- train(Price ~ .,   
+                data= train, 
+                method = "rpart",
+                trControl = fitControl,
+                cp=0.001,  
+                metric = "RMSE",
+                maxdepth=20)
+model.dec_tree
+```
+
+#RESULTS
+
+#LASSO
 
 ```{r}
+lasso_prediction <- predict(model.lasso,test)
 
+lasso_data <- data.frame(pred = lasso_prediction, obs = test$Price)
+
+lasso_cv <- round(defaultSummary(lasso_data),digits = 4)
+
+lasso_cv
 ```
+
+
+#RIDGE
+```{r}
+ridge_prediction <- predict(model.ridge,test)
+
+ridge_data <- data.frame(pred = ridge_prediction, obs = test$Price)
+
+ridge_cv <- round(defaultSummary(ridge_data),digits = 4)
+
+ridge_cv
+```
+
+
+#KNN
+
+```{r}
+knn_prediction <- predict(model.knn,test)
+
+knn_data <- data.frame(pred = knn_prediction, obs = test$Price)
+
+knn_cv <- round(defaultSummary(knn_data),digits = 4)
+
+knn_cv
+```
+
+
+#DECISION TREE
+
+```{r}
+tree_prediction <- predict(model.dec_tree,test)
+
+tree_data <- data.frame(pred = tree_prediction, obs = test$Price)
+
+tree_cv <- round(defaultSummary(tree_data),digits = 4)
+
+tree_cv
+```
+
+
 
 
