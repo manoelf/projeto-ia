@@ -86,6 +86,14 @@ model.lasso <- train(Price ~ .,
 model.lasso
 ```
 
+```{r}
+plot(model.lasso, xlab = "Lambda", ylab = "RMSE")
+```
+
+```{r}
+ggplot(varImp(model.lasso))
+```
+
 
 ```{r}
 lambda.grid <- expand.grid(lambda = seq(0, 2, by=0.1))
@@ -104,6 +112,15 @@ model.ridge <- train(Price ~ .,
 model.ridge
 ```
 
+```{r}
+plot(model.ridge, xlab = "Lambda", ylab = "RMSE")
+```
+
+```{r}
+ggplot(varImp(model.ridge))
+```
+
+
 #KNN
 
 ```{r}
@@ -117,6 +134,15 @@ model.knn <- train(Price ~ .,
 model.knn
 ```
 
+```{r}
+plot(model.knn, ylab = "RMSE")
+```
+
+```{r}
+ggplot(varImp(model.knn))
+```
+
+
 #Arvore de decisão
 
 
@@ -127,9 +153,19 @@ model.dec_tree <- train(Price ~ .,
                 trControl = fitControl,
                 cp=0.001,  
                 metric = "RMSE",
-                maxdepth=20)
+                maxdepth=20, 
+                linout = TRUE)
 model.dec_tree
 ```
+
+```{r}
+plot(model.dec_tree, xlab = "Lambda", ylab = "RMSE")
+```
+
+```{r}
+ggplot(varImp(model.dec_tree))
+```
+
 
 #RESULTS
 
